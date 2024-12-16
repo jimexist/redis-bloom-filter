@@ -1,50 +1,50 @@
 {
-	"name": "redis-bloom-filter",
-	"version": "0.1.0",
-	"description": "A TypeScript npm package port for Redis Bloom Filter from Redisson",
-	"main": "./lib/index.js",
-	"types": "lib/index.d.ts",
-	"files": [
-		"lib/**/*"
-	],
-	"scripts": {
-		"build": "tsc --project tsconfig.build.json",
-		"clean": "rm -rf ./lib/",
-		"test": "vitest",
-		"format": "biome format --write ./src ./test",
-		"lint": "biome lint ./src ./test",
-		"check": "biome check ./src ./test",
-		"bench": "vitest bench",
-		"typecheck": "tsc --noEmit"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/jimexist/redis-bloom-filter.git"
-	},
-	"keywords": [
-		"redis",
-		"bloom",
-		"filter",
-		"redisson"
-	],
-	"author": {
-		"name": "Jiayu Liu",
-		"url": "https://github.com/jimexist"
-	},
-	"license": "Apache-2.0",
-	"bugs": {
-		"url": "https://github.com/jimexist/redis-bloom-filter/issues"
-	},
-	"homepage": "https://github.com/jimexist/redis-bloom-filter#readme",
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@types/node": "^22.10.2",
-		"typescript": "^5.6.3",
-		"vitest": "^2.1.4"
-	},
-	"dependencies": {
-		"ioredis": "^5.4.1",
-		"xxh3-ts": "^1.0.6"
-	},
-	"packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
+  "name": "redis-bloom-filter",
+  "version": "0.1.0",
+  "description": "A TypeScript npm package port for Redis Bloom Filter from Redisson",
+  "main": "./lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf ./lib/",
+    "test": "vitest",
+    "format": "biome format --write ./src ./test",
+    "lint": "biome lint ./src ./test",
+    "check": "biome check ./src ./test",
+    "bench": "vitest bench",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimexist/redis-bloom-filter.git"
+  },
+  "keywords": [
+    "redis",
+    "bloom",
+    "filter",
+    "redisson"
+  ],
+  "author": {
+    "name": "Jiayu Liu",
+    "url": "https://github.com/jimexist"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jimexist/redis-bloom-filter/issues"
+  },
+  "homepage": "https://github.com/jimexist/redis-bloom-filter#readme",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "xxh3-ts": "^1.0.6"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

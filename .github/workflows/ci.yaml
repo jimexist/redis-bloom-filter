@@ -28,28 +28,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Install dependencies
-        run: pnpm install
+        run: yarn install --frozen-lockfile
 
       - name: Run format check
-        run: pnpm exec biome check ./src
+        run: yarn biome check ./src
 
       - name: Run tests
-        run: pnpm test run
+        run: yarn test run
         env:
           REDIS_URL: redis://localhost:6379
 
       - name: Run build
-        run: pnpm run build
+        run: yarn build
