@@ -1,5 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { BloomFilter } from "../src"
+import Redis from "ioredis"
+
+function produceRandomBigIntString(size: number): string[] {
+  const items = new Set<string>()
+  while (items.size < size) {
+    const randomBigInt = BigInt(
+      Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+    )
+    items.add(randomBigInt.toString())
+  }
+  return Array.from(items)
+}
 
 describe("BloomFilter", () => {
   let filter: BloomFilter<string>
@@ -69,13 +81,13 @@ describe("BloomFilter", () => {
   })
 
   it("should check existence and deletion", async () => {
-    const exists = await filter.isExists()
+    const exists = await filter.exists()
     expect(exists).toBe(true)
 
     const deleted = await filter.delete()
     expect(deleted).toBe(true)
 
-    const existsAfterDelete = await filter.isExists()
+    const existsAfterDelete = await filter.exists()
     expect(existsAfterDelete).toBe(false)
   })
 
@@ -113,10 +125,10 @@ describe("BloomFilter", () => {
   it("should throw error for invalid false probability values", async () => {
     await filter.delete()
     await expect(filter.tryInit(1, -1)).rejects.toThrow(
-      "Bloom filter false probability can't be negative",
+      "Bloom filter false probability must be between 0 and 1",
     )
     await expect(filter.tryInit(1, 2)).rejects.toThrow(
-      "Bloom filter false probability can't be greater than 1",
+      "Bloom filter false probability must be between 0 and 1",
     )
   })
 
@@ -126,8 +138,8 @@ describe("BloomFilter", () => {
 
     expect(await filter.getExpectedInsertions()).toBe(100)
     expect(await filter.getFalseProbability()).toBe(0.03)
-    expect(await filter.getHashIterations()).toBe(5)
-    expect(await filter.getSize()).toBe(729)
+    expect(filter.getHashIterations()).toBe(5)
+    expect(filter.getSize()).toBe(729)
   })
 
   it("should have correct config values", async () => {
@@ -136,8 +148,8 @@ describe("BloomFilter", () => {
 
     expect(await filter.getExpectedInsertions()).toBe(10000000)
     expect(await filter.getFalseProbability()).toBe(0.03)
-    expect(await filter.getHashIterations()).toBe(5)
-    expect(await filter.getSize()).toBe(72984408)
+    expect(filter.getHashIterations()).toBe(5)
+    expect(filter.getSize()).toBe(72984408)
   })
 
   it("should handle initialization correctly", async () => {
@@ -146,7 +158,7 @@ describe("BloomFilter", () => {
     expect(await filter.tryInit(55000001, 0.03)).toBe(false)
 
     await filter.delete()
-    expect(await filter.isExists()).toBe(false)
+    expect(await filter.exists()).toBe(false)
     expect(await filter.tryInit(55000001, 0.03)).toBe(true)
   })
 })
@@ -159,17 +171,6 @@ describe("BloomFilter scale test", () => {
       await filter.delete()
     }
   })
-
-  function produceRandomBigIntString(size: number): string[] {
-    const items = new Set<string>()
-    while (items.size < size) {
-      const randomBigInt = BigInt(
-        Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
-      )
-      items.add(randomBigInt.toString())
-    }
-    return Array.from(items)
-  }
 
   async function testLargeScaleOperations(size: number, fpSampleSize = 10000) {
     const items = produceRandomBigIntString(size)
@@ -208,4 +209,68 @@ describe("BloomFilter scale test", () => {
       await testLargeScaleOperations(size)
     })
   }
+})
+
+describe("BloomFilter TTL", () => {
+  let filter: BloomFilter<string>
+
+  afterEach(async () => {
+    if (filter) {
+      await filter.delete()
+    }
+  })
+
+  it("should not expire when TTL is 0", async () => {
+    const size = 1000
+    const items = produceRandomBigIntString(size)
+    filter = new BloomFilter({
+      redis: {
+        url: "redis://localhost:6379",
+      },
+      name: "test-ttl-0",
+      ttlSeconds: 0, // No TTL
+    })
+    expect(await filter.tryInit(size, 0.01)).toBe(true)
+
+    const addedCount = await filter.addAll(items)
+    expect(addedCount).toBeGreaterThanOrEqual(size - size * 0.05)
+    expect(addedCount).toBeLessThanOrEqual(size + size * 0.05)
+
+    // Check TTL directly from Redis
+    const redisClient = new Redis("redis://localhost:6379")
+    const ttl = await redisClient.ttl("test-ttl-0")
+    expect(ttl).toBe(-1) // -1 indicates no TTL set
+  })
+
+  it("should expire after TTL", async () => {
+    const size = 1000
+    const items = produceRandomBigIntString(size)
+    filter = new BloomFilter({
+      redis: {
+        url: "redis://localhost:6379",
+      },
+      name: "test-ttl-1",
+      ttlSeconds: 1, // 1s TTL
+    })
+    expect(await filter.tryInit(size, 0.01)).toBe(true)
+
+    const addedCount = await filter.addAll(items)
+    expect(addedCount).toBeGreaterThanOrEqual(size - size * 0.05)
+    expect(addedCount).toBeLessThanOrEqual(size + size * 0.05)
+
+    // Check TTL directly from Redis
+    const redisClient = new Redis("redis://localhost:6379")
+    const ttl = await redisClient.ttl("test-ttl-1")
+    expect(ttl).toBeGreaterThanOrEqual(0)
+    expect(ttl).toBeLessThanOrEqual(1)
+
+    // Wait for TTL to expire
+    await new Promise((resolve) => setTimeout(resolve, 1100))
+
+    const count = await filter.count()
+    expect(count).toBeFalsy()
+
+    const containsCount = await filter.containsAll(items)
+    expect(containsCount).toBeFalsy()
+  })
 })
