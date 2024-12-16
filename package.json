@@ -1,12 +1,10 @@
 {
   "name": "redis-bloom-filter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A TypeScript npm package port for Redis Bloom Filter from Redisson",
   "main": "./lib/index.js",
   "types": "lib/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
+  "files": ["lib/**/*"],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./lib/",
@@ -21,12 +19,7 @@
     "type": "git",
     "url": "git+https://github.com/jimexist/redis-bloom-filter.git"
   },
-  "keywords": [
-    "redis",
-    "bloom",
-    "filter",
-    "redisson"
-  ],
+  "keywords": ["redis", "bloom", "filter", "redisson"],
   "author": {
     "name": "Jiayu Liu",
     "url": "https://github.com/jimexist"
